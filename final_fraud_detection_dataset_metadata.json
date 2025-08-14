@@ -1,0 +1,56 @@
+{
+  "total_samples": 194913,
+  "fraud_samples": 93196,
+  "legitimate_samples": 101717,
+  "fraud_percentage": 47.81415298107361,
+  "columns": [
+    "text",
+    "binary_label",
+    "detailed_category",
+    "data_type"
+  ],
+  "detailed_categories": {
+    "legitimate": 101717,
+    "phishing": 71857,
+    "popup_scam": 11333,
+    "sms_spam": 6988,
+    "reward_scam": 606,
+    "tech_support_scam": 605,
+    "refund_scam": 604,
+    "ssn_scam": 604,
+    "job_scam": 599
+  },
+  "data_types": {
+    "email_classification": 131395,
+    "text_classification": 46661,
+    "popup_classification": 11333,
+    "dialogue_classification": 4818,
+    "sms_classification": 706
+  },
+  "text_length_stats": {
+    "mean": 817.489382442423,
+    "median": 283.0,
+    "min": 1,
+    "max": 15003,
+    "std": 1526.8897749482921
+  },
+  "dataset_info": {
+    "purpose": "NLP/LLM fraud detection training",
+    "columns_description": {
+      "text": "Main content to classify (required for training)",
+      "binary_label": "Binary fraud label (0=legitimate, 1=fraud)",
+      "detailed_category": "Multi-class fraud categories for specialized training",
+      "data_type": "Content type for domain-specific analysis"
+    },
+    "removed_columns": [
+      "source_file",
+      "dataset",
+      "confidence",
+      "original_label",
+      "original_type",
+      "domain",
+      "country"
+    ],
+    "optimization": "Streamlined for machine learning training efficiency"
+  }
+}

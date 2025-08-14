@@ -1,0 +1,314 @@
+{
+  "total_samples": 238233,
+  "fraud_samples": 115892,
+  "legitimate_samples": 122341,
+  "fraud_percentage": 48.64649313906973,
+  "datasets_count": 23,
+  "data_types": {
+    "email_classification": 164625,
+    "text_classification": 47041,
+    "popup_classification": 11375,
+    "dialogue_classification": 9620,
+    "sms_classification": 5572
+  },
+  "average_text_length": 717.8565018280423,
+  "empty_texts": 1,
+  "detailed_categories": {
+    "legitimate": 122341,
+    "phishing": 91577,
+    "popup_scam": 11375,
+    "sms_spam": 7521,
+    "reward_scam": 1207,
+    "tech_support_scam": 1205,
+    "ssn_scam": 1204,
+    "refund_scam": 1204,
+    "job_scam": 599
+  },
+  "confidence_distribution": {
+    "high": 238233
+  },
+  "processing_stats": {
+    "difraud_sms": 6574,
+    "difraud_phishing": 15272,
+    "difraud_job_scams": 14295,
+    "scam_dialogue_scam-dialogue_test": 320,
+    "scam_dialogue_scam-dialogue_all": 1600,
+    "scam_dialogue_scam-dialogue_train": 1280,
+    "synthetic_single-agent-scam-dialogue_test": 320,
+    "synthetic_single-agent-scam-dialogue_train": 1280,
+    "synthetic_youtube_scam_conversations": 20,
+    "synthetic_multi-agent_conversation_all": 1600,
+    "synthetic_multi_agent_conversation_test": 320,
+    "synthetic_single-agent-scam-dialogue_all": 1600,
+    "synthetic_multi_agent_conversation_train": 1280,
+    "spam_main": 5572,
+    "spam_parquet": 10900,
+    "phishing_Nigerian_Fraud": 3293,
+    "phishing_Ling": 2797,
+    "phishing_Nazario": 1561,
+    "phishing_SpamAssasin": 5793,
+    "phishing_CEAS_08": 39126,
+    "phishing_phishing_email": 82486,
+    "phishing_Enron": 29569,
+    "popupdb": 11375
+  },
+  "correction_stats": {
+    "legitimate_other": 117541,
+    "legitimate_delivery": 1200,
+    "legitimate_insurance": 1200,
+    "legitimate_telemarketing": 400,
+    "legitimate_wrong": 1200,
+    "legitimate_appointment": 800
+  },
+  "fraud_category_stats": {
+    "sms_spam": {
+      "count": 7521,
+      "percentage_of_fraud": 6.489662789493666,
+      "avg_text_length": 276.4896955192129,
+      "datasets": [
+        "difraud_sms",
+        "spam_main",
+        "spam_parquet"
+      ]
+    },
+    "phishing": {
+      "count": 91577,
+      "percentage_of_fraud": 79.01925931039243,
+      "avg_text_length": 517.6518121362351,
+      "datasets": [
+        "difraud_phishing",
+        "phishing_Nigerian_Fraud",
+        "phishing_Ling",
+        "phishing_Nazario",
+        "phishing_SpamAssasin",
+        "phishing_CEAS_08",
+        "phishing_phishing_email",
+        "phishing_Enron"
+      ]
+    },
+    "job_scam": {
+      "count": 599,
+      "percentage_of_fraud": 0.5168605253166741,
+      "avg_text_length": 1191.0183639399,
+      "datasets": [
+        "difraud_job_scams"
+      ]
+    },
+    "ssn_scam": {
+      "count": 1204,
+      "percentage_of_fraud": 1.0388982846098092,
+      "avg_text_length": 2505.3853820598006,
+      "datasets": [
+        "scam_dialogue_scam-dialogue_test",
+        "scam_dialogue_scam-dialogue_all",
+        "scam_dialogue_scam-dialogue_train",
+        "synthetic_single-agent-scam-dialogue_test",
+        "synthetic_single-agent-scam-dialogue_train",
+        "synthetic_youtube_scam_conversations",
+        "synthetic_multi-agent_conversation_all",
+        "synthetic_multi_agent_conversation_test",
+        "synthetic_single-agent-scam-dialogue_all",
+        "synthetic_multi_agent_conversation_train"
+      ]
+    },
+    "refund_scam": {
+      "count": 1204,
+      "percentage_of_fraud": 1.0388982846098092,
+      "avg_text_length": 2440.572259136213,
+      "datasets": [
+        "scam_dialogue_scam-dialogue_test",
+        "scam_dialogue_scam-dialogue_all",
+        "scam_dialogue_scam-dialogue_train",
+        "synthetic_single-agent-scam-dialogue_test",
+        "synthetic_single-agent-scam-dialogue_train",
+        "synthetic_youtube_scam_conversations",
+        "synthetic_multi-agent_conversation_all",
+        "synthetic_multi_agent_conversation_test",
+        "synthetic_single-agent-scam-dialogue_all",
+        "synthetic_multi_agent_conversation_train"
+      ]
+    },
+    "tech_support_scam": {
+      "count": 1205,
+      "percentage_of_fraud": 1.0397611569392193,
+      "avg_text_length": 2624.213278008299,
+      "datasets": [
+        "scam_dialogue_scam-dialogue_test",
+        "scam_dialogue_scam-dialogue_all",
+        "scam_dialogue_scam-dialogue_train",
+        "synthetic_single-agent-scam-dialogue_test",
+        "synthetic_single-agent-scam-dialogue_train",
+        "synthetic_youtube_scam_conversations",
+        "synthetic_multi-agent_conversation_all",
+        "synthetic_multi_agent_conversation_test",
+        "synthetic_single-agent-scam-dialogue_all",
+        "synthetic_multi_agent_conversation_train"
+      ]
+    },
+    "reward_scam": {
+      "count": 1207,
+      "percentage_of_fraud": 1.0414869015980397,
+      "avg_text_length": 2244.5816072908037,
+      "datasets": [
+        "scam_dialogue_scam-dialogue_test",
+        "scam_dialogue_scam-dialogue_all",
+        "scam_dialogue_scam-dialogue_train",
+        "synthetic_single-agent-scam-dialogue_test",
+        "synthetic_single-agent-scam-dialogue_train",
+        "synthetic_youtube_scam_conversations",
+        "synthetic_multi-agent_conversation_all",
+        "synthetic_multi_agent_conversation_test",
+        "synthetic_single-agent-scam-dialogue_all",
+        "synthetic_multi_agent_conversation_train"
+      ]
+    },
+    "popup_scam": {
+      "count": 11375,
+      "percentage_of_fraud": 9.815172747040348,
+      "avg_text_length": 136.27024175824175,
+      "datasets": [
+        "popupdb"
+      ]
+    }
+  },
+  "legitimate_vs_fraud_by_dataset": {
+    "difraud_sms": {
+      "total_samples": 6574,
+      "fraud_samples": 1274,
+      "legitimate_samples": 5300,
+      "fraud_percentage": 19.37937328871311
+    },
+    "difraud_phishing": {
+      "total_samples": 15272,
+      "fraud_samples": 6074,
+      "legitimate_samples": 9198,
+      "fraud_percentage": 39.772132006286014
+    },
+    "difraud_job_scams": {
+      "total_samples": 14295,
+      "fraud_samples": 599,
+      "legitimate_samples": 13696,
+      "fraud_percentage": 4.190276320391746
+    },
+    "scam_dialogue_scam-dialogue_test": {
+      "total_samples": 320,
+      "fraud_samples": 160,
+      "legitimate_samples": 160,
+      "fraud_percentage": 50.0
+    },
+    "scam_dialogue_scam-dialogue_all": {
+      "total_samples": 1600,
+      "fraud_samples": 800,
+      "legitimate_samples": 800,
+      "fraud_percentage": 50.0
+    },
+    "scam_dialogue_scam-dialogue_train": {
+      "total_samples": 1280,
+      "fraud_samples": 640,
+      "legitimate_samples": 640,
+      "fraud_percentage": 50.0
+    },
+    "synthetic_single-agent-scam-dialogue_test": {
+      "total_samples": 320,
+      "fraud_samples": 160,
+      "legitimate_samples": 160,
+      "fraud_percentage": 50.0
+    },
+    "synthetic_single-agent-scam-dialogue_train": {
+      "total_samples": 1280,
+      "fraud_samples": 640,
+      "legitimate_samples": 640,
+      "fraud_percentage": 50.0
+    },
+    "synthetic_youtube_scam_conversations": {
+      "total_samples": 20,
+      "fraud_samples": 20,
+      "legitimate_samples": 0,
+      "fraud_percentage": 100.0
+    },
+    "synthetic_multi-agent_conversation_all": {
+      "total_samples": 1600,
+      "fraud_samples": 800,
+      "legitimate_samples": 800,
+      "fraud_percentage": 50.0
+    },
+    "synthetic_multi_agent_conversation_test": {
+      "total_samples": 320,
+      "fraud_samples": 160,
+      "legitimate_samples": 160,
+      "fraud_percentage": 50.0
+    },
+    "synthetic_single-agent-scam-dialogue_all": {
+      "total_samples": 1600,
+      "fraud_samples": 800,
+      "legitimate_samples": 800,
+      "fraud_percentage": 50.0
+    },
+    "synthetic_multi_agent_conversation_train": {
+      "total_samples": 1280,
+      "fraud_samples": 640,
+      "legitimate_samples": 640,
+      "fraud_percentage": 50.0
+    },
+    "spam_main": {
+      "total_samples": 5572,
+      "fraud_samples": 747,
+      "legitimate_samples": 4825,
+      "fraud_percentage": 13.406317300789663
+    },
+    "spam_parquet": {
+      "total_samples": 10900,
+      "fraud_samples": 5500,
+      "legitimate_samples": 5400,
+      "fraud_percentage": 50.45871559633027
+    },
+    "phishing_Nigerian_Fraud": {
+      "total_samples": 3293,
+      "fraud_samples": 3293,
+      "legitimate_samples": 0,
+      "fraud_percentage": 100.0
+    },
+    "phishing_Ling": {
+      "total_samples": 2797,
+      "fraud_samples": 445,
+      "legitimate_samples": 2352,
+      "fraud_percentage": 15.90990346800143
+    },
+    "phishing_Nazario": {
+      "total_samples": 1561,
+      "fraud_samples": 1561,
+      "legitimate_samples": 0,
+      "fraud_percentage": 100.0
+    },
+    "phishing_SpamAssasin": {
+      "total_samples": 5793,
+      "fraud_samples": 1706,
+      "legitimate_samples": 4087,
+      "fraud_percentage": 29.449335404798894
+    },
+    "phishing_CEAS_08": {
+      "total_samples": 39126,
+      "fraud_samples": 21829,
+      "legitimate_samples": 17297,
+      "fraud_percentage": 55.791545264018815
+    },
+    "phishing_phishing_email": {
+      "total_samples": 82486,
+      "fraud_samples": 42891,
+      "legitimate_samples": 39595,
+      "fraud_percentage": 51.99791479766264
+    },
+    "phishing_Enron": {
+      "total_samples": 29569,
+      "fraud_samples": 13778,
+      "legitimate_samples": 15791,
+      "fraud_percentage": 46.59609726402651
+    },
+    "popupdb": {
+      "total_samples": 11375,
+      "fraud_samples": 11375,
+      "legitimate_samples": 0,
+      "fraud_percentage": 100.0
+    }
+  }
+}
