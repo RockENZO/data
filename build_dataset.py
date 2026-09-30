@@ -97,6 +97,8 @@ def build(input_path, output_dir):
                 types[row['data_type']] += 1
                 sources[row['dataset']] += 1
                 labels[row['binary_label']] += 1
+        if not seen:
+            raise ValueError('Input has no valid non-empty records')
         report = {'schema_version': 1, 'input_sha256': sha256(input_path),
             'input_rows': input_rows, 'total_samples': len(seen), 'empty_rows_removed': empty,
             'exact_duplicates_removed': duplicates, 'fraud_samples': labels['1'],
