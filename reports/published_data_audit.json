@@ -1,0 +1,26 @@
+{
+  "data_types": {
+    "dialogue_classification": 4818,
+    "email_classification": 131395,
+    "popup_classification": 11333,
+    "sms_classification": 706,
+    "text_classification": 46661
+  },
+  "detailed_categories": {
+    "job_scam": 599,
+    "legitimate": 101717,
+    "phishing": 71857,
+    "popup_scam": 11333,
+    "refund_scam": 604,
+    "reward_scam": 606,
+    "sms_spam": 6988,
+    "ssn_scam": 604,
+    "tech_support_scam": 605
+  },
+  "empty_texts": 0,
+  "exact_duplicates": 0,
+  "fraud_samples": 93196,
+  "input_sha256": "453de8f230994ce29eae4ce2a9a94a7ced6f6e7f7176b38a1ad813bbfacd2794",
+  "legitimate_samples": 101717,
+  "total_samples": 194913
+}

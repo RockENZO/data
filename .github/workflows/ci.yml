@@ -1,0 +1,24 @@
+name: Dataset validation
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests -v
+      - run: python -m compileall -q build_dataset.py corrected_fraud_detection_processor.py
+  published-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: git lfs pull --include='corrected_fraud_detection_dataset.csv,final_fraud_detection_dataset.csv'
+      - run: python build_dataset.py --output-dir artifacts/verified
+      - run: python tests/verify_published.py
