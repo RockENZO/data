@@ -675,23 +675,17 @@ class CorrectedFraudDataProcessor:
 
 def main():
     """Main execution function."""
-    # Set the data directory path
-    data_directory = "/Users/admin/Downloads/data"
-    output_file = "/Users/admin/Downloads/data/corrected_fraud_detection_dataset.csv"
-    
-    # Delete old/incorrect datasets
-    old_files = [
-        "/Users/admin/Downloads/data/enhanced_fraud_detection_dataset.csv",
-        "/Users/admin/Downloads/data/combined_fraud_detection_dataset.csv",
-        "/Users/admin/Downloads/data/enhanced_fraud_detection_dataset_metadata.json",
-        "/Users/admin/Downloads/data/enhanced_fraud_detection_dataset_category_samples.csv"
-    ]
-    
-    for old_file in old_files:
-        if os.path.exists(old_file):
-            os.remove(old_file)
-            logger.info(f"Deleted outdated file: {old_file}")
-    
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--data-dir', type=Path, default=Path(__file__).resolve().parent)
+    parser.add_argument('--output', type=Path, default=Path('artifacts/corrected.csv'))
+    args = parser.parse_args()
+    if args.output.exists():
+        parser.error('Output exists; choose a new path')
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    data_directory = str(args.data_dir)
+    output_file = str(args.output)
+
     # Initialize corrected processor
     processor = CorrectedFraudDataProcessor(data_directory)
     
@@ -721,6 +715,10 @@ def main():
     final_df = processor.save_corrected_dataset(output_file)
     
     if final_df is not None:
+        # Recompute statistics after deduplication, matching the saved artifact.
+        processor.combined_data = final_df.to_dict('records')
+        stats = processor.generate_corrected_statistics()
+        stats['statistics_stage'] = 'post_deduplication'
         # Save corrected metadata
         metadata_file = output_file.replace('.csv', '_metadata.json')
         with open(metadata_file, 'w') as f:

@@ -1,269 +1,76 @@
-# Comprehensive Fraud Detection Dataset
+# Fraud detection corpus
 
-## Overview
+A research corpus combining email, SMS, job advertisements, popups and real/synthetic dialogues. The validated final artifact contains **194,913 rows: 93,196 fraud and 101,717 legitimate**, with nine categories (eight fraud categories plus legitimate). These are corpus counts, not model accuracy or independently verified annotation quality.
 
-This repository contains a unified fraud detection dataset created by combining multiple high-quality datasets from various domains including email phishing, SMS scams, job fraud, dialogue scams, and malicious popups. The dataset is designed for training machine learning models to detect fraudulent and harmful scam content across different communication channels.
+## Files and schema
 
-## Dataset Statistics
+| File | Purpose |
+| --- | --- |
+| `final_fraud_detection_dataset.csv` | Published training content: `text`, `binary_label`, `detailed_category`, `data_type` |
+| `corrected_fraud_detection_dataset.csv` | Historical corrected corpus with source metadata; 194,914 rows including one empty text |
+| `build_dataset.py` | Deterministic validated finalization and audit using the Python standard library |
+| `reports/published_data_audit.json` | Counts and SHA-256 computed from the actual published CSV |
+| `reports/verified_build.json` | Input/output hashes, cleaning counts and source counts from a real rebuild |
+| `corrected_fraud_detection_processor.py` | Legacy raw-source ingestion, configurable paths, post-deduplication statistics |
 
-- **Total Samples**: 194,914 (after deduplication)
-- **Fraudulent Samples**: 121,292 (51%)
-- **Legitimate Samples**: 116,941 (49%)
-- **Source Datasets**: 23 different datasets
-- **Average Text Length**: 700 characters
+CSV files use Git LFS. Requires Python 3.10+ and Git LFS. The final artifact has no source columns; rebuild below to obtain a matching provenance sidecar.
 
-### Data Type Distribution
-
-| Data Type | Sample Count | Description |
-|-----------|--------------|-------------|
-| Email Classification | 164,625 | Phishing emails, spam emails, legitimate emails |
-| Text Classification | 47,041 | General text content (job postings, news, etc.) |
-| Popup Classification | 11,375 | Malicious popup advertisements and warnings |
-| Dialogue Classification | 9,620 | Conversation data between scammers and victims |
-| SMS Classification | 5,572 | Text messages including spam and legitimate SMS |
-
-## File Structure
-
-```
-combined_fraud_detection_dataset.csv          # Main dataset file
-combined_fraud_detection_dataset_metadata.json # Dataset statistics and metadata
-combined_fraud_detection_dataset_sample.csv   # Sample of the data for inspection
-fraud_detection_data_processor.py             # Script used to create the dataset
-README.md                                      # This documentation file
+```bash
+git lfs install
+git lfs pull --include='corrected_fraud_detection_dataset.csv,final_fraud_detection_dataset.csv'
+python build_dataset.py --output-dir artifacts/verified
+python tests/verify_published.py
+python -m unittest discover -s tests -v
 ```
 
-## Dataset Schema
+Output: `final_fraud_detection_dataset.csv`, `provenance.jsonl`, `manifest.json`. Every accepted text has a SHA-256 sample ID and zero-based row index in the sidecar, retained dataset/source path and original label fields. The manifest hashes both output files. Existing output directories containing files are refused. The input hash is checked against the reviewed manifest by `verify_published.py`; CI verifies actual LFS contents as well as synthetic failure fixtures.
 
-The main dataset file (`combined_fraud_detection_dataset.csv`) contains the following columns:
+The builder removes empty texts and identical duplicate records, fails on contradictory duplicate labels/types, unknown categories, malformed CSV and missing provenance. Rebuild row values match the published final CSV; The rebuilt CSV is byte-identical to the published artifact and has the same SHA-256. Source paths are normalized to repository-relative paths.
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `text` | string | The main text content to be classified |
-| `label` | integer | Binary label (0 = legitimate, 1 = fraudulent/scam) |
-| `dataset` | string | Source dataset identifier |
-| `source_file` | string | Original file path of the data |
-| `data_type` | string | Type of classification task |
-| `dialogue_type` | string | (Optional) Type of dialogue for conversation data |
-| `domain` | string | (Optional) Domain information for popup data |
-| `country` | string | (Optional) Country information for popup data |
-
-## Source Datasets
-
-### 1. DIFrauD Benchmark Datasets
-- **Job Scams**: Employment fraud detection (14,295 samples)
-- **Phishing**: Email phishing detection (15,272 samples)
-- **SMS**: SMS spam detection (6,574 samples)
-
-### 2. Spam Datasets
-- **Main Spam CSV**: SMS spam classification (5,572 samples)
-- **Parquet Format**: Additional spam data (10,900 samples)
-
-### 3. Phishing Email Datasets
-- **Multiple Sources**: CEAS_08, Enron, Ling, Nazario, Nigerian_Fraud, SpamAssasin, and others
-- **Total**: 164,625 email samples
-
-### 4. Scam Dialogue Datasets
-- **Real Conversations**: Actual scammer-victim dialogues
-- **Synthetic Data**: LLM-generated scam conversations
-- **Total**: 9,620 dialogue samples
-
-### 5. PopupDB
-- **Malicious Popups**: Database of scam popup advertisements
-- **Total**: 11,375 popup samples
-
-## Data Quality Features
-
-### Text Preprocessing
-- Whitespace normalization
-- Removal of null bytes and problematic characters
-- Text length limitation (max 10,000 characters)
-- Unicode normalization
-
-### Label Standardization
-- All labels converted to binary format (0/1)
-- Consistent mapping across different source label formats
-- Handles various label types: spam/ham, fraud/legitimate, etc.
-
-### Deduplication
-- Removed 43,319 duplicate entries based on text content
-- Ensures unique samples in the final dataset
-
-## Usage Examples
-
-### Loading the Dataset
-
-```python
-import pandas as pd
-
-# Load the main dataset
-df = pd.read_csv('combined_fraud_detection_dataset.csv')
-
-# Basic information
-print(f"Dataset shape: {df.shape}")
-print(f"Fraud ratio: {df['label'].mean():.3f}")
-print(f"Data types: {df['data_type'].value_counts()}")
+```bash
+python build_dataset.py --input final_fraud_detection_dataset.csv --audit-only
+# Optional raw-source ingestion (all source LFS files and pandas/pyarrow required):
+pip install -r requirements.txt
+git lfs pull
+python corrected_fraud_detection_processor.py --data-dir . --output artifacts/corrected.csv
+python build_dataset.py --input artifacts/corrected.csv --output-dir artifacts/new-final
 ```
 
-### Train/Test Split by Dataset Type
+Raw ingestion is a separate recipe: upstream source files, processors and dependencies can change its result. The checked-in corrected CSV is the reviewed input for the reproducible finalization above. The historical corrected metadata recorded counts BEFORE deduplication (238,233), so it must not be used as final corpus statistics. The old README mixed pre/post-deduplication counts; the reviewed reports supersede those claims.
 
-```python
-from sklearn.model_selection import train_test_split
+## Categories
 
-# Split by maintaining dataset distribution
-X = df['text']
-y = df['label']
-groups = df['dataset']
+| Category | Rows |
+| --- | ---: |
+| legitimate | 101,717 |
+| phishing | 71,857 |
+| popup_scam | 11,333 |
+| sms_spam | 6,988 |
+| reward_scam | 606 |
+| tech_support_scam | 605 |
+| refund_scam | 604 |
+| ssn_scam | 604 |
+| job_scam | 599 |
 
-# Stratified split maintaining label balance
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, stratify=y, random_state=42
-)
-```
+## Evaluation and limitations
 
-### Basic Text Classification
+- Keep provenance out of model features; retain it for audits and split design. The corrected input already dropped duplicate records, so alternate source attribution cannot be reconstructed from this input.
+- An identical-text hash prevents exact leakage, but related templates and dialogue fragments may still leak. Group by original conversation/template/source and document held-out domains before reporting model performance.
+- Existing source train/test exports were combined in the historical processor. The final CSV is **not** an untouched official benchmark test set. Do not reuse an upstream test split after training on this combined corpus.
+- Labels inherit upstream definitions and heuristic mappings. Spam is treated as fraud in parts of this corpus; that definition is broader than financial fraud. Inspect source mappings and perform human review before deployment.
+- Synthetic dialogues are not evidence of real-world scam detection performance. Report results by source/category with macro F1, per-class support, confusion matrix and false-positive rate on legitimate samples.
+- Messages may contain personal data. Avoid reproducing sample content in public demos without reviewing it.
 
-```python
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report
+## Source attribution and rights
 
-# Feature extraction
-vectorizer = TfidfVectorizer(max_features=10000, stop_words='english')
-X_train_vec = vectorizer.fit_transform(X_train)
-X_test_vec = vectorizer.transform(X_test)
+Source documents are retained in `difraud/README.md`, `spam dataset/README.md`, `scam dialogue/README.md`, `PopupDB-Data-main/README.md` and `Synthetic-Data-for-Scam-Detection-Leveraging-LLMs-to-Train-Deep-Learning-Models-main/README.md`.
 
-# Model training
-model = LogisticRegression()
-model.fit(X_train_vec, y_train)
+| Source family | Evidence in repository | Status |
+| --- | --- | --- |
+| DIFrauD | Dataset card declares MIT | Preserve upstream attribution; check individual bundled domains |
+| Spam parquet | Dataset card declares Apache-2.0 | Preserve notices and verify dataset identity |
+| Synthetic scam dialogues | Upstream LICENSE and README | Read license before redistribution |
+| PopupDB | Upstream LICENSE and README | Read license and underlying content conditions |
+| Aggregated phishing/SMS/other dialogues | Mixed files and incomplete per-file licensing | Per-source rights review outstanding |
 
-# Evaluation
-y_pred = model.predict(X_test_vec)
-print(classification_report(y_test, y_pred))
-```
-
-### Domain-Specific Analysis
-
-```python
-# Analyze performance by data type
-for data_type in df['data_type'].unique():
-    subset = df[df['data_type'] == data_type]
-    fraud_rate = subset['label'].mean()
-    print(f"{data_type}: {len(subset)} samples, {fraud_rate:.1%} fraud rate")
-```
-
-## Recommended Use Cases
-
-### 1. Multi-Domain Fraud Detection
-Train models that can generalize across different types of fraudulent content:
-- Email phishing detection
-- SMS spam filtering
-- Job scam identification
-- Conversation-based scam detection
-
-### 2. Transfer Learning Research
-Use the dataset to study how fraud detection models perform across domains:
-- Cross-domain generalization
-- Domain adaptation techniques
-- Few-shot learning for new fraud types
-
-### 3. Feature Engineering Research
-The diverse content types allow for studying:
-- Text representation methods
-- Domain-specific features
-- Multi-modal fraud detection
-
-### 4. Evaluation Benchmarking
-Compare fraud detection approaches across:
-- Traditional ML methods (SVM, Random Forest)
-- Deep learning models (LSTM, BERT)
-- Ensemble methods
-
-## Model Performance Baselines
-
-### Recommended Evaluation Metrics
-- **Precision**: Important for reducing false positives
-- **Recall**: Critical for catching actual fraud
-- **F1-Score**: Balanced metric for overall performance
-- **AUC-ROC**: Good for ranking/probability outputs
-
-### Cross-Domain Evaluation
-When evaluating models, consider:
-1. **In-domain performance**: Train and test on same data type
-2. **Cross-domain performance**: Train on one type, test on another
-3. **Multi-domain performance**: Train on mixed data, test on each type
-
-## Data Ethics and Considerations
-
-### Privacy
-- All personal information has been removed or anonymized
-- No real phone numbers, emails, or addresses are exposed
-- Synthetic data is clearly marked
-
-### Bias Considerations
-- Dataset contains content from multiple sources and time periods
-- Geographic bias may exist (primarily English-language content)
-- Consider demographic representation when deploying models
-
-### Responsible Use
-- Models should be tested thoroughly before deployment
-- Consider false positive impact on legitimate communications
-- Regular model updates recommended as fraud tactics evolve
-
-## Citation and Attribution
-
-If you use this dataset in your research, please cite the original source datasets:
-
-### DIFrauD Dataset
-```
-@inproceedings{boumber-etal-2024-domain,
-    title = "Domain-Agnostic Adapter Architecture for Deception Detection: Extensive Evaluations with the {DIF}rau{D} Benchmark",
-    author = "Boumber, Dainis A. and Qachfar, Fatima Zahra and Verma, Rakesh",
-    booktitle = "Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation (LREC-COLING 2024)",
-    year = "2024"
-}
-```
-
-### Synthetic Scam Detection Data
-Please refer to the original repository for appropriate citations.
-
-## License
-
-This dataset combines multiple sources with different licenses. Please refer to the original datasets for specific licensing terms. The processing script is provided under MIT license for educational and research purposes.
-
-## Technical Support
-
-### Common Issues
-
-1. **Memory Errors**: The dataset is large (194k samples). Consider:
-   - Loading data in chunks
-   - Using sampling for initial experiments
-   - Increasing available RAM
-
-2. **Encoding Issues**: If you encounter text encoding problems:
-   - Use `encoding='utf-8'` when loading CSV
-   - Consider using `errors='ignore'` for problematic characters
-
-3. **Class Imbalance**: The dataset is relatively balanced (51%/49%), but for specific subsets:
-   - Use stratified sampling
-   - Consider class weights in model training
-   - Apply resampling techniques if needed
-
-### Performance Optimization
-
-- Use vectorization for text processing
-- Consider using sparse matrices for large feature sets
-- Implement batch processing for large-scale training
-
-## Future Updates
-
-This dataset will be updated periodically to include:
-- New fraud detection datasets
-- Improved preprocessing techniques
-- Additional metadata fields
-- Performance benchmarks from different models
-
----
-
-**Created**: August 2025  
-**Last Updated**: August 2025  
-**Version**: 1.0
+A repository/code license does not grant a blanket license to all messages. This corpus is a research artifact; unrestricted redistribution or commercial rights for every source have not been established. The builder preserves traceability so these reviews can be completed rather than obscured.

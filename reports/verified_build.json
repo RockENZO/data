@@ -1,0 +1,62 @@
+{
+  "columns": [
+    "text",
+    "binary_label",
+    "detailed_category",
+    "data_type"
+  ],
+  "data_types": {
+    "dialogue_classification": 4818,
+    "email_classification": 131395,
+    "popup_classification": 11333,
+    "sms_classification": 706,
+    "text_classification": 46661
+  },
+  "detailed_categories": {
+    "job_scam": 599,
+    "legitimate": 101717,
+    "phishing": 71857,
+    "popup_scam": 11333,
+    "refund_scam": 604,
+    "reward_scam": 606,
+    "sms_spam": 6988,
+    "ssn_scam": 604,
+    "tech_support_scam": 605
+  },
+  "empty_rows_removed": 1,
+  "exact_duplicates_removed": 0,
+  "fraud_samples": 93196,
+  "input_rows": 194914,
+  "input_sha256": "370ca073afce4bdec91c1ab18cd260319d0c2a1f7a69d4f3432c3ba305efb2f3",
+  "legitimate_samples": 101717,
+  "limitations": [
+    "Corrected input already discarded duplicate source records; alternate provenance cannot be recovered.",
+    "Labels are inherited from upstream processors, not independently adjudicated.",
+    "Text hashes prevent exact duplicate leakage only; source/template grouping is needed for evaluation."
+  ],
+  "output_sha256": "453de8f230994ce29eae4ce2a9a94a7ced6f6e7f7176b38a1ad813bbfacd2794",
+  "provenance_sha256": "51b85b7b0a33ead373357290326d5e5969d1cd89a010225e5fc75d669111ae0b",
+  "schema_version": 1,
+  "source_datasets": {
+    "difraud_job_scams": 14295,
+    "difraud_phishing": 15135,
+    "difraud_sms": 6574,
+    "phishing_CEAS_08": 15222,
+    "phishing_Enron": 23485,
+    "phishing_Ling": 2594,
+    "phishing_Nazario": 1399,
+    "phishing_Nigerian_Fraud": 2459,
+    "phishing_SpamAssasin": 4161,
+    "phishing_phishing_email": 82075,
+    "popupdb": 11333,
+    "scam_dialogue_scam-dialogue_all": 1278,
+    "scam_dialogue_scam-dialogue_test": 320,
+    "spam_main": 706,
+    "spam_parquet": 10657,
+    "synthetic_multi-agent_conversation_all": 1600,
+    "synthetic_single-agent-scam-dialogue_test": 320,
+    "synthetic_single-agent-scam-dialogue_train": 1280,
+    "synthetic_youtube_scam_conversations": 20
+  },
+  "total_samples": 194913
+}
