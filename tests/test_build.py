@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from build_dataset import build, audit
+from build_dataset import build, audit, relative_source
 
 class BuildTests(unittest.TestCase):
     def fixture(self, root, rows):
@@ -54,6 +54,31 @@ class BuildTests(unittest.TestCase):
             source.write_text('text\nx\n')
             with self.assertRaisesRegex(ValueError, 'Missing'):
                 audit(source)
+
+    def test_ambiguous_csv_headers_are_rejected_atomically(self):
+        for headers in [
+            'text,text,binary_label,detailed_category,data_type,dataset,source_file',
+            'text,binary_label,detailed_category,data_type,dataset,source_file,',
+            'text,binary_label,detailed_category,data_type,dataset,source_file,metadata,metadata',
+        ]:
+            with self.subTest(headers=headers), tempfile.TemporaryDirectory() as temp:
+                root=Path(temp);source=root/'input.csv'
+                # A header alone must be rejected, rather than interpreted as an
+                # empty corpus or silently overwrite one of the named columns.
+                source.write_text(headers+'\n')
+                with self.assertRaisesRegex(ValueError,'header'):
+                    build(source,root/'out')
+                self.assertEqual(list((root/'out').iterdir()),[])
+
+    def test_normalized_provenance_cannot_escape_the_repository(self):
+        for value in ['/Users/old/data/../secret.csv',
+                      '/Users/old/data/source/../../secret.csv',
+                      'C:\\old\\data\\..\\secret.csv']:
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(ValueError,'relative'):
+                    relative_source(value)
+        self.assertEqual(relative_source('/Users/old/data/source/messages.csv'),
+                         'source/messages.csv')
 
 if __name__ == '__main__':
     unittest.main()
