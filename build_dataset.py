@@ -56,7 +56,7 @@ def relative_source(value):
     if marker in normalized:
         normalized = normalized.split(marker, 1)[1]
     path = Path(normalized)
-    if path.is_absolute() or PureWindowsPath(normalized).drive or '..' in path.parts:
+    if not normalized.strip() or path == Path('.') or path.is_absolute() or PureWindowsPath(normalized).drive or '..' in path.parts:
         raise ValueError('Source path cannot be made repository relative')
     return path.as_posix()
 

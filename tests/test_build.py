@@ -73,7 +73,9 @@ class BuildTests(unittest.TestCase):
     def test_normalized_provenance_cannot_escape_the_repository(self):
         for value in ['/Users/old/data/../secret.csv',
                       '/Users/old/data/source/../../secret.csv',
-                      'C:\\old\\data\\..\\secret.csv']:
+                      'C:\\old\\data\\..\\secret.csv',
+                      '/Users/old/data/', '/Users/old/data/.',
+                      '/Users/old/data/   ', '.']:
             with self.subTest(value=value):
                 with self.assertRaisesRegex(ValueError,'relative'):
                     relative_source(value)
