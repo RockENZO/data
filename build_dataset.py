@@ -4,7 +4,7 @@ from collections import Counter
 import csv
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import tempfile
 
 COLUMNS = ('text', 'binary_label', 'detailed_category', 'data_type')
@@ -26,6 +26,9 @@ def read_rows(path, provenance=False):
             raise ValueError('Git LFS pointer found; run git lfs pull before building')
         stream.seek(0)
         reader = csv.DictReader(stream)
+        headers = reader.fieldnames or []
+        if len(headers) != len(set(headers)) or any(not name.strip() for name in headers):
+            raise ValueError('CSV header names must be unique and non-empty')
         required = set(COLUMNS) | ({'dataset', 'source_file'} if provenance else set())
         if not required.issubset(reader.fieldnames or []):
             raise ValueError('Missing columns: ' + ', '.join(sorted(required - set(reader.fieldnames or []))))
@@ -51,9 +54,9 @@ def relative_source(value):
     normalized = value.replace('\\', '/')
     marker = '/data/'
     if marker in normalized:
-        return normalized.split(marker, 1)[1]
+        normalized = normalized.split(marker, 1)[1]
     path = Path(normalized)
-    if path.is_absolute() or '..' in path.parts:
+    if not normalized.strip() or path == Path('.') or path.is_absolute() or PureWindowsPath(normalized).drive or '..' in path.parts:
         raise ValueError('Source path cannot be made repository relative')
     return path.as_posix()
 
