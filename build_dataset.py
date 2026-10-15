@@ -129,7 +129,7 @@ def audit(input_path):
         empty += not bool(row['text'].strip())
         digest = hashlib.sha256(row['text'].encode('utf-8')).hexdigest()
         identity = tuple(row[key] for key in COLUMNS[1:])
-        if digest in seen and seen[digest] != identity:
+        if row['text'].strip() and digest in seen and seen[digest] != identity:
             raise ValueError(f'Conflicting labels/type for identical text at record {number}')
         duplicates += digest in seen
         seen[digest] = identity
