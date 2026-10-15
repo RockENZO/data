@@ -37,6 +37,24 @@ class BuildTests(unittest.TestCase):
                 build(source, root/'out')
             self.assertEqual(list((root/'out').iterdir()), [])
 
+    def test_audit_rejects_conflicting_labels_for_same_text(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            source=self.fixture(root,[('same','0','legitimate'),('same','1','phishing')])
+            with self.assertRaisesRegex(ValueError,'Conflicting'):
+                audit(source)
+            source=self.fixture(root,[('same','1','phishing'),('same','1','phishing')])
+            self.assertEqual(audit(source)['exact_duplicates'],1)
+
+    def test_audit_empty_texts_do_not_conflict(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            source=self.fixture(root,[('valid','0','legitimate'),('', '0','legitimate'),('', '1','phishing')])
+            report=audit(source)
+            self.assertEqual(report['empty_texts'],2)
+            self.assertEqual(report['exact_duplicates'],1)
+            self.assertEqual(build(source,root/'out')['total_samples'],1)
+
     def test_bad_label_and_category(self):
         for row in [('x', '2', 'phishing'), ('x', '0', 'phishing'), ('x', '1', 'unknown')]:
             with tempfile.TemporaryDirectory() as temp:
