@@ -121,15 +121,18 @@ def build(input_path, output_dir):
 
 def audit(input_path):
     labels, categories, types = Counter(), Counter(), Counter()
-    seen = set()
+    seen = {}
     empty = duplicates = total = 0
     for number, row in read_rows(input_path):
         validate_label(row, number)
         total += 1
         empty += not bool(row['text'].strip())
         digest = hashlib.sha256(row['text'].encode('utf-8')).hexdigest()
+        identity = tuple(row[key] for key in COLUMNS[1:])
+        if digest in seen and seen[digest] != identity:
+            raise ValueError(f'Conflicting labels/type for identical text at record {number}')
         duplicates += digest in seen
-        seen.add(digest)
+        seen[digest] = identity
         labels[row['binary_label']] += 1
         categories[row['detailed_category']] += 1
         types[row['data_type']] += 1
