@@ -4,6 +4,7 @@ from collections import Counter
 import csv
 import hashlib
 import json
+import io
 import os
 from pathlib import Path, PureWindowsPath
 import tempfile
@@ -21,8 +22,9 @@ def sha256(path):
     return digest.hexdigest()
 
 
-def read_rows(path, provenance=False):
-    with Path(path).open(encoding='utf-8-sig', newline='') as stream:
+def read_rows(path, provenance=False, *, snapshot=None):
+    source = io.StringIO(snapshot.decode('utf-8-sig'), newline='') if snapshot is not None else Path(path).open(encoding='utf-8-sig', newline='')
+    with source as stream:
         if stream.readline().startswith('version https://git-lfs.github.com/spec'):
             raise ValueError('Git LFS pointer found; run git lfs pull before building')
         stream.seek(0)
@@ -66,6 +68,7 @@ def build(input_path, output_dir):
     input_path, output_dir = Path(input_path), Path(output_dir)
     if output_dir.exists() and any(output_dir.iterdir()):
         raise ValueError('Output directory must be empty; existing artifacts are never overwritten')
+    input_bytes = input_path.read_bytes()
     output_dir.mkdir(parents=True, exist_ok=True)
     categories, types, sources, labels = (Counter() for _ in range(4))
     seen = {}
@@ -76,7 +79,7 @@ def build(input_path, output_dir):
         with (staging / 'final_fraud_detection_dataset.csv').open('w', encoding='utf-8', newline='') as final, (staging / 'provenance.jsonl').open('w', encoding='utf-8') as provenance:
             writer = csv.DictWriter(final, fieldnames=COLUMNS, lineterminator='\n')
             writer.writeheader()
-            for number, row in read_rows(input_path, provenance=True):
+            for number, row in read_rows(input_path, provenance=True, snapshot=input_bytes):
                 input_rows += 1
                 validate_label(row, number)
                 if not row['text'].strip():
@@ -103,7 +106,7 @@ def build(input_path, output_dir):
                 labels[row['binary_label']] += 1
         if not seen:
             raise ValueError('Input has no valid non-empty records')
-        report = {'schema_version': 1, 'input_sha256': sha256(input_path),
+        report = {'schema_version': 1, 'input_sha256': hashlib.sha256(input_bytes).hexdigest(),
             'input_rows': input_rows, 'total_samples': len(seen), 'empty_rows_removed': empty,
             'exact_duplicates_removed': duplicates, 'fraud_samples': labels['1'],
             'legitimate_samples': labels['0'], 'columns': list(COLUMNS),
@@ -126,10 +129,11 @@ def build(input_path, output_dir):
 
 
 def audit(input_path):
+    input_bytes = Path(input_path).read_bytes()
     labels, categories, types = Counter(), Counter(), Counter()
     seen = {}
     empty = duplicates = total = 0
-    for number, row in read_rows(input_path):
+    for number, row in read_rows(input_path, snapshot=input_bytes):
         validate_label(row, number)
         total += 1
         empty += not bool(row['text'].strip())
@@ -142,7 +146,7 @@ def audit(input_path):
         labels[row['binary_label']] += 1
         categories[row['detailed_category']] += 1
         types[row['data_type']] += 1
-    return {'input_sha256': sha256(input_path), 'total_samples': total,
+    return {'input_sha256': hashlib.sha256(input_bytes).hexdigest(), 'total_samples': total,
             'fraud_samples': labels['1'], 'legitimate_samples': labels['0'],
             'empty_texts': empty, 'exact_duplicates': duplicates,
             'detailed_categories': dict(sorted(categories.items())), 'data_types': dict(sorted(types.items()))}

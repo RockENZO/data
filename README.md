@@ -78,3 +78,7 @@ A repository/code license does not grant a blanket license to all messages. This
 ### Output publication safety
 
 Build outputs use atomic, exclusive hard links from a staging directory on the output filesystem. A file that appears after the initial empty-directory check is never overwritten. All builders claim the CSV first; the manifest is published last and signals a complete bundle. On publication failure, published paths are never unlinked: a check-then-unlink rollback could delete a concurrent replacement. Partial outputs are preserved, with no final manifest; inspect them and retry in a fresh empty directory. Readers should wait for the manifest. The output filesystem must support hard links; failures preserve existing files instead of falling back to overwrite. This is no-clobber publication, not a transaction spanning arbitrary external writers.
+
+### Exact input fingerprints
+
+Build and audit hashes identify the exact byte snapshot passed to the CSV parser. Later edits or replacement of the input path cannot change the report fingerprint. The snapshot is decoded as UTF-8 with optional BOM and retains normal CSV newline handling. This requires memory proportional to the raw CSV in addition to validation records. Existing published data and reports are not regenerated.

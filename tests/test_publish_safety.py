@@ -14,7 +14,7 @@ class PublicationTests(unittest.TestCase):
                 writer = csv.writer(stream); writer.writerow([*dataset.COLUMNS,'dataset','source_file']);writer.writerow(['Hello','0','legitimate','email','fixture','messages.csv'])
             original_hash = dataset.sha256
             def arriving_file(path):
-                if Path(path) == source:
+                if Path(path).name == 'final_fraud_detection_dataset.csv':
                     (out/'provenance.jsonl').write_bytes(b'other process artifact')
                 return original_hash(path)
             with patch.object(dataset, 'sha256', arriving_file):
