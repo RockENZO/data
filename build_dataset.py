@@ -117,21 +117,11 @@ def build(input_path, output_dir):
         (staging / 'manifest.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
         # Atomic no-clobber publication on the same filesystem. All builders
         # claim the CSV first; manifest appears only after the complete bundle.
-        published = []
-        try:
-            for name in ('final_fraud_detection_dataset.csv', 'provenance.jsonl', 'manifest.json'):
-                artifact, target = staging / name, output_dir / name
-                os.link(artifact, target)
-                published.append((artifact, target))
-        except OSError:
-            # Never remove a destination another writer replaced after our link.
-            for artifact, target in reversed(published):
-                try:
-                    if os.path.samefile(artifact, target):
-                        target.unlink()
-                except FileNotFoundError:
-                    pass
-            raise
+        # Never unlink a published path on failure: another writer may replace
+        # it between an ownership check and unlink. Preserve partial output;
+        # absence of manifest signals that callers must use a fresh directory.
+        for name in ('final_fraud_detection_dataset.csv', 'provenance.jsonl', 'manifest.json'):
+            os.link(staging / name, output_dir / name)
     return report
 
 
