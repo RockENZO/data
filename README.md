@@ -74,3 +74,7 @@ Source documents are retained in `difraud/README.md`, `spam dataset/README.md`, 
 | Aggregated phishing/SMS/other dialogues | Mixed files and incomplete per-file licensing | Per-source rights review outstanding |
 
 A repository/code license does not grant a blanket license to all messages. This corpus is a research artifact; unrestricted redistribution or commercial rights for every source have not been established. The builder preserves traceability so these reviews can be completed rather than obscured.
+
+### Output publication safety
+
+Build outputs use atomic, exclusive hard links from a staging directory on the output filesystem. A file that appears after the initial empty-directory check is never overwritten. All builders claim the CSV first; the manifest is published last and signals a complete bundle. On publication failure, published paths are never unlinked: a check-then-unlink rollback could delete a concurrent replacement. Partial outputs are preserved, with no final manifest; inspect them and retry in a fresh empty directory. Readers should wait for the manifest. The output filesystem must support hard links; failures preserve existing files instead of falling back to overwrite. This is no-clobber publication, not a transaction spanning arbitrary external writers.

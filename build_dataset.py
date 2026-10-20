@@ -4,6 +4,7 @@ from collections import Counter
 import csv
 import hashlib
 import json
+import os
 from pathlib import Path, PureWindowsPath
 import tempfile
 
@@ -114,8 +115,13 @@ def build(input_path, output_dir):
                 'Labels are inherited from upstream processors, not independently adjudicated.',
                 'Text hashes prevent exact duplicate leakage only; source/template grouping is needed for evaluation.']}
         (staging / 'manifest.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
-        for artifact in staging.iterdir():
-            artifact.replace(output_dir / artifact.name)
+        # Atomic no-clobber publication on the same filesystem. All builders
+        # claim the CSV first; manifest appears only after the complete bundle.
+        # Never unlink a published path on failure: another writer may replace
+        # it between an ownership check and unlink. Preserve partial output;
+        # absence of manifest signals that callers must use a fresh directory.
+        for name in ('final_fraud_detection_dataset.csv', 'provenance.jsonl', 'manifest.json'):
+            os.link(staging / name, output_dir / name)
     return report
 
 
