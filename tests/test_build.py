@@ -100,5 +100,26 @@ class BuildTests(unittest.TestCase):
         self.assertEqual(relative_source('/Users/old/data/source/messages.csv'),
                          'source/messages.csv')
 
+class CsvSyntaxTests(unittest.TestCase):
+    def test_malformed_quotes_fail_build_and_audit_without_publication(self):
+        header = 'text,binary_label,detailed_category,data_type,dataset,source_file\n'
+        for record in ['message,0,legitimate,email,fixture,"source.csv',
+                       'message,0,legitimate,email,fixture,"source.csv"junk\n']:
+            with self.subTest(record=record), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                source = root / 'input.csv'
+                source.write_text(header + record, encoding='utf-8')
+                for operation in [lambda: audit(source), lambda: build(source, root / 'out')]:
+                    with self.assertRaisesRegex(ValueError, 'Malformed CSV'):
+                        operation()
+                self.assertEqual(list((root / 'out').iterdir()), [])
+
+    def test_valid_escaped_quotes_and_multiline_fields_are_preserved(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = BuildTests().fixture(root, [('He said "hello"\nnext line', '0', 'legitimate')])
+            self.assertEqual(build(source, root / 'out')['total_samples'], 1)
+            self.assertEqual(audit(root / 'out/final_fraud_detection_dataset.csv')['total_samples'], 1)
+
 if __name__ == '__main__':
     unittest.main()

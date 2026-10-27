@@ -28,17 +28,20 @@ def read_rows(path, provenance=False, *, snapshot=None):
         if stream.readline().startswith('version https://git-lfs.github.com/spec'):
             raise ValueError('Git LFS pointer found; run git lfs pull before building')
         stream.seek(0)
-        reader = csv.DictReader(stream)
-        headers = reader.fieldnames or []
-        if len(headers) != len(set(headers)) or any(not name.strip() for name in headers):
-            raise ValueError('CSV header names must be unique and non-empty')
-        required = set(COLUMNS) | ({'dataset', 'source_file'} if provenance else set())
-        if not required.issubset(reader.fieldnames or []):
-            raise ValueError('Missing columns: ' + ', '.join(sorted(required - set(reader.fieldnames or []))))
-        for number, row in enumerate(reader, 2):
-            if None in row or any(row.get(key) is None for key in required):
-                raise ValueError(f'Malformed CSV record {number}')
-            yield number, row
+        try:
+            reader = csv.DictReader(stream, strict=True)
+            headers = reader.fieldnames or []
+            if len(headers) != len(set(headers)) or any(not name.strip() for name in headers):
+                raise ValueError('CSV header names must be unique and non-empty')
+            required = set(COLUMNS) | ({'dataset', 'source_file'} if provenance else set())
+            if not required.issubset(reader.fieldnames or []):
+                raise ValueError('Missing columns: ' + ', '.join(sorted(required - set(reader.fieldnames or []))))
+            for number, row in enumerate(reader, 2):
+                if None in row or any(row.get(key) is None for key in required):
+                    raise ValueError(f'Malformed CSV record {number}')
+                yield number, row
+        except csv.Error as error:
+            raise ValueError(f"Malformed CSV near physical line {reader.line_num}: {error}") from error
 
 
 def validate_label(row, number):

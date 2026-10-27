@@ -25,7 +25,7 @@ python -m unittest discover -s tests -v
 
 Output: `final_fraud_detection_dataset.csv`, `provenance.jsonl`, `manifest.json`. Every accepted text has a SHA-256 sample ID and zero-based row index in the sidecar, retained dataset/source path and original label fields. The manifest hashes both output files. Existing output directories containing files are refused. The input hash is checked against the reviewed manifest by `verify_published.py`; CI verifies actual LFS contents as well as synthetic failure fixtures.
 
-The builder removes empty texts and identical duplicate records, fails on contradictory duplicate labels/types, unknown categories, malformed CSV and missing provenance. Rebuild row values match the published final CSV; The rebuilt CSV is byte-identical to the published artifact and has the same SHA-256. Source paths are normalized to repository-relative paths.
+The builder removes empty texts and identical duplicate records, fails on contradictory duplicate labels/types, unknown categories, malformed CSV (including unterminated quoted fields and trailing characters after a closing quote) and missing provenance. Rebuild row values match the published final CSV; The rebuilt CSV is byte-identical to the published artifact and has the same SHA-256. Source paths are normalized to repository-relative paths.
 
 ```bash
 python build_dataset.py --input final_fraud_detection_dataset.csv --audit-only
