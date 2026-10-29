@@ -36,6 +36,8 @@ python corrected_fraud_detection_processor.py --data-dir . --output artifacts/co
 python build_dataset.py --input artifacts/corrected.csv --output-dir artifacts/new-final
 ```
 
+Raw ingestion writes the requested CSV plus sibling `<stem>_metadata.json` and `<stem>_category_samples.csv` files, even when the requested filename has no extension or an uppercase extension. All three destinations must be unused, including dangling symlinks. Exclusive creation also refuses a file that appears after preflight; completed files may remain if a later sidecar fails. This legacy recipe is not an atomic multi-file transaction: inspect partial outputs and retry with a fresh basename. The deterministic builder has its separate manifest-last publication protocol.
+
 Raw ingestion is a separate recipe: upstream source files, processors and dependencies can change its result. The checked-in corrected CSV is the reviewed input for the reproducible finalization above. The historical corrected metadata recorded counts BEFORE deduplication (238,233), so it must not be used as final corpus statistics. The old README mixed pre/post-deduplication counts; the reviewed reports supersede those claims.
 
 ## Categories

@@ -642,7 +642,7 @@ class CorrectedFraudDataProcessor:
         df = df.sort_values(['detailed_category', 'confidence', 'dataset'])
         
         # Save to CSV
-        df.to_csv(output_path, index=False, encoding='utf-8')
+        df.to_csv(output_path, index=False, encoding='utf-8', mode='x')
         logger.info(f"Corrected dataset saved to {output_path}")
         logger.info(f"Final dataset size: {len(df)} samples")
         
@@ -680,8 +680,12 @@ def main():
     parser.add_argument('--data-dir', type=Path, default=Path(__file__).resolve().parent)
     parser.add_argument('--output', type=Path, default=Path('artifacts/corrected.csv'))
     args = parser.parse_args()
-    if args.output.exists():
-        parser.error('Output exists; choose a new path')
+    # Derive siblings from the final filename only, never replace directory names.
+    metadata_file = args.output.with_name(args.output.stem + '_metadata.json')
+    sample_file = args.output.with_name(args.output.stem + '_category_samples.csv')
+    for destination in (args.output, metadata_file, sample_file):
+        if destination.exists() or destination.is_symlink():
+            parser.error(f'Output exists; choose a new path: {destination}')
     args.output.parent.mkdir(parents=True, exist_ok=True)
     data_directory = str(args.data_dir)
     output_file = str(args.output)
@@ -720,8 +724,7 @@ def main():
         stats = processor.generate_corrected_statistics()
         stats['statistics_stage'] = 'post_deduplication'
         # Save corrected metadata
-        metadata_file = output_file.replace('.csv', '_metadata.json')
-        with open(metadata_file, 'w') as f:
+        with open(metadata_file, 'x', encoding='utf-8') as f:
             # Convert numpy types to Python types for JSON serialization
             json_stats = {}
             for key, value in stats.items():
@@ -733,7 +736,6 @@ def main():
         logger.info(f"Corrected metadata saved to {metadata_file}")
         
         # Create corrected category samples
-        sample_file = output_file.replace('.csv', '_category_samples.csv')
         sample_dfs = []
         
         # Get samples from each fraud category
@@ -746,7 +748,7 @@ def main():
         
         if sample_dfs:
             sample_df = pd.concat(sample_dfs, ignore_index=True)
-            sample_df.to_csv(sample_file, index=False)
+            sample_df.to_csv(sample_file, index=False, encoding='utf-8', mode='x')
             logger.info(f"Corrected category samples saved to {sample_file}")
     
     logger.info("\\n=== CORRECTED PROCESSING COMPLETE ===")
