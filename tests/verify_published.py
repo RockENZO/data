@@ -1,15 +1,38 @@
-"""Verify published counts, exact row equality and deterministic build manifest."""
+"""Verify the published corpus and the actual bytes of the rebuilt artifacts."""
+
+import json
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import csv
-import json
-from build_dataset import audit
-report = audit('final_fraud_detection_dataset.csv')
-expected = json.loads(Path('reports/published_data_audit.json').read_text())
-assert report == expected, 'Published dataset differs from verified audit'
-assert report['empty_texts'] == report['exact_duplicates'] == 0
-assert json.loads(Path('artifacts/verified/manifest.json').read_text()) == json.loads(Path('reports/verified_build.json').read_text())
-with open('final_fraud_detection_dataset.csv', newline='') as published, open('artifacts/verified/final_fraud_detection_dataset.csv', newline='') as rebuilt:
-    assert list(csv.DictReader(published)) == list(csv.DictReader(rebuilt)), 'Rebuild differs from published rows'
-print('PASS: published data, metadata, provenance manifest and rebuilt row equality')
+from build_dataset import audit, sha256
+
+
+def verify_published(root):
+    published = root / 'final_fraud_detection_dataset.csv'
+    reports = root / 'reports'
+    rebuilt = root / 'artifacts' / 'verified'
+    report = audit(published)
+    expected = json.loads((reports / 'published_data_audit.json').read_text())
+    if report != expected:
+        raise ValueError('Published dataset differs from verified audit')
+    if report['empty_texts'] or report['exact_duplicates']:
+        raise ValueError('Published dataset contains empty or duplicate records')
+
+    manifest = json.loads((reports / 'verified_build.json').read_text())
+    if json.loads((rebuilt / 'manifest.json').read_text()) != manifest:
+        raise ValueError('Rebuild manifest differs from verified build')
+    if report['input_sha256'] != manifest['output_sha256']:
+        raise ValueError('Published CSV differs from verified build')
+    if sha256(rebuilt / published.name) != manifest['output_sha256']:
+        raise ValueError('Rebuilt CSV differs from verified build')
+    if sha256(rebuilt / 'provenance.jsonl') != manifest['provenance_sha256']:
+        raise ValueError('Rebuilt provenance differs from verified build')
+
+
+if __name__ == '__main__':
+    try:
+        verify_published(Path.cwd())
+    except (OSError, ValueError, KeyError) as error:
+        sys.exit(f'Validation failed: {error}')
+    print('PASS: published data, rebuild manifest and rebuilt artifact hashes')
