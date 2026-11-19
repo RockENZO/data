@@ -37,7 +37,7 @@ def read_rows(path, provenance=False, *, snapshot=None):
             if not required.issubset(reader.fieldnames or []):
                 raise ValueError('Missing columns: ' + ', '.join(sorted(required - set(reader.fieldnames or []))))
             for number, row in enumerate(reader, 2):
-                if None in row or any(row.get(key) is None for key in required):
+                if None in row or None in row.values():
                     raise ValueError(f'Malformed CSV record {number}')
                 yield number, row
         except csv.Error as error:
