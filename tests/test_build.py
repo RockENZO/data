@@ -114,6 +114,26 @@ class CsvSyntaxTests(unittest.TestCase):
                         operation()
                 self.assertEqual(list((root / 'out').iterdir()), [])
 
+    def test_rejects_truncated_optional_columns_without_publication(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / 'input.csv'
+            header = 'text,binary_label,detailed_category,data_type,dataset,source_file,original_label\n'
+            record = 'message,0,legitimate,email,fixture,source.csv'
+            source.write_text(header + record + '\n', encoding='utf-8')
+
+            with self.assertRaisesRegex(ValueError, 'Malformed CSV record 2'):
+                build(source, root / 'out')
+            self.assertEqual(list((root / 'out').iterdir()), [])
+            with self.assertRaisesRegex(ValueError, 'Malformed CSV record 2'):
+                audit(source)
+
+            source.write_text(header + record + ',\n', encoding='utf-8')
+            self.assertEqual(build(source, root / 'out')['total_samples'], 1)
+            provenance = json.loads((root / 'out' / 'provenance.jsonl').read_text())
+            self.assertEqual(provenance['original_label'], '')
+            self.assertEqual(audit(source)['total_samples'], 1)
+
     def test_valid_escaped_quotes_and_multiline_fields_are_preserved(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
