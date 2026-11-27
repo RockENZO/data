@@ -104,7 +104,9 @@ class CsvSyntaxTests(unittest.TestCase):
     def test_malformed_quotes_fail_build_and_audit_without_publication(self):
         header = 'text,binary_label,detailed_category,data_type,dataset,source_file\n'
         for record in ['message,0,legitimate,email,fixture,"source.csv',
-                       'message,0,legitimate,email,fixture,"source.csv"junk\n']:
+                       'message,0,legitimate,email,fixture,"source.csv"junk\n',
+                       'message"stray,0,legitimate,email,fixture,source.csv\n',
+                       'message,0,legitimate,email,fixt"ure,source.csv\n']:
             with self.subTest(record=record), tempfile.TemporaryDirectory() as temp:
                 root = Path(temp)
                 source = root / 'input.csv'
