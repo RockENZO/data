@@ -7,6 +7,7 @@ import json
 import io
 import os
 from pathlib import Path, PureWindowsPath
+import re
 import tempfile
 
 COLUMNS = ('text', 'binary_label', 'detailed_category', 'data_type')
@@ -22,6 +23,32 @@ def sha256(path):
     return digest.hexdigest()
 
 
+CSV_SYNTAX = re.compile(r'[,\r\n"]')
+
+
+def checked_csv_lines(lines):
+    """Reject bare quotes before csv.reader can accept them as literal text."""
+    quoted = False
+    for number, line in enumerate(lines, 1):
+        field_start = 0
+        after_quote = -1
+        if quoted or '"' in line:
+            for token in CSV_SYNTAX.finditer(line):
+                if token.group() == '"':
+                    if quoted:
+                        quoted = False
+                        after_quote = token.end()
+                    elif token.start() in (field_start, after_quote):
+                        quoted = True
+                        after_quote = -1
+                    else:
+                        raise ValueError(f'Malformed CSV near physical line {number}: bare quote in unquoted field')
+                elif not quoted:
+                    field_start = token.end()
+                    after_quote = -1
+        yield line
+
+
 def read_rows(path, provenance=False, *, snapshot=None):
     source = io.StringIO(snapshot.decode('utf-8-sig'), newline='') if snapshot is not None else Path(path).open(encoding='utf-8-sig', newline='')
     with source as stream:
@@ -29,7 +56,7 @@ def read_rows(path, provenance=False, *, snapshot=None):
             raise ValueError('Git LFS pointer found; run git lfs pull before building')
         stream.seek(0)
         try:
-            reader = csv.DictReader(stream, strict=True)
+            reader = csv.DictReader(checked_csv_lines(stream), strict=True)
             headers = reader.fieldnames or []
             if len(headers) != len(set(headers)) or any(not name.strip() for name in headers):
                 raise ValueError('CSV header names must be unique and non-empty')
